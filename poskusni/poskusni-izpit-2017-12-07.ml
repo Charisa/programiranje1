@@ -36,20 +36,37 @@
 (* 2. naloga: podatkovni tipi in rekurzija *)
 (* ======================================= *)
 
+
 (* 2.1) Rožno drevo je drevo, v katerem ima vsak koren poljubno mnogo otrok,
    ki so zopet rožna drevesa. Rožna drevesa predstavimo s parametričnim
    tipom /'a drevo/ z enim konstruktorjem, ki sprejme:
    - vrednost (koren) tipa /'a/ in
    - seznam (gozd) dreves tipa /'a drevo/. *)
 
-	type 'a drevo = {koren : 'a ; gozd : 'a drevo}
+	type 'a drevo = T of 'a * 'a drevo list
+
+   let test_tree1 = T('a', [T('f',[T('g',[])]); T('c',[]); T('b',[T('d',[]); T('e',[])])]);;
+   let test_tree2 = T(2, [T(-3,[T(1,[])]); T(2,[]); T(-8,[T(4,[]); T(5,[])])]);;
 
 (* 2.2) Napišite funkcijo, ki vrne koren danega rožnega drevesa. *)
 
-	let koren = 
+	let koren = function 
+      T(x, _) -> x
 
 (* 2.3) Napišite funkcijo, ki preveri, ali drevo celih števil vsebuje kakšno negativno število. *)
-let kaksno_negativno = failwith "dopolni me"
+
+   let vsa_vozlisca drevo = 
+      let rec aux acc = function
+         | T(x, y) -> aux (x::acc) 
+      in aux [] drevo
+
+
+
+
+   let kaksno_negativno = failwith "dopolni me"
+
+
+
 
 (* 2.4) Sestavite funkcijo, ki sprejme naravno število ter sestavi (poljubno)
    drevo, ki ima toliko otrok.

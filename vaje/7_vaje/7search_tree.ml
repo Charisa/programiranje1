@@ -129,7 +129,10 @@ let rec is_empty t =
    Node (Node (Empty, true, Empty), true, Node (Empty, true, Empty)))
    ---------- *)
 
-let rec map_tree f t = ()
+let rec map_tree f = function
+  | Empty -> Empty
+  | Node(l, x, r) -> Node (map_tree f l, f x, map_tree f r)
+
 
 (* The function "list_of_tree t" ['a tree -> 'a list] maps the data of the tree
    into a list. If the tree is a binary search tree the returned list should be
@@ -139,7 +142,9 @@ let rec map_tree f t = ()
    - : int list = [0; 2; 5; 6; 7; 11]
    ---------- *)
 
-let rec list_of_tree t = ()
+let rec list_of_tree = function
+  | Empty -> []
+  | Node (l, y, d) -> (list_of_tree l) @ [y] @ (list_of_tree d)
 
 (* The function "is_bst t" ['a tree -> bool] checks wheter a tree is a
    binary search tree (BST). Assume that a tree has no repetitions (a tree
@@ -152,7 +157,14 @@ let rec list_of_tree t = ()
    - : bool = false
    ---------- *)
 
-let rec is_bst t = ()
+let rec urejen = function
+  | [] -> true
+  | x :: [] -> true
+  | x :: y :: xs -> if x < y then urejen (y :: xs) else false
+  
+   
+let rec is_bst t = 
+  t |> list_of_tree |> urejen
 
 (*------------------------------------------------------------------------------
    In the remaining exercises the variable name bst assumes a BST input.
