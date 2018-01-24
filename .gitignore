@@ -55,3 +55,7 @@ projectSaraKorat/.idea/modules.xml
 projectSaraKorat/.idea/projectSaraKorat.iml
 
 projectSaraKorat/.idea/workspace.xml
+
+*.xml
+
+*.iml

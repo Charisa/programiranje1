@@ -314,13 +314,35 @@ let lotto_select n max =
 (* 25. Generate a random permutation of the elements of a list. (easy) *)
 (* !!!!!! *)
 
-
-		
+let permutation list =
+    let rec extract acc n = function
+      | [] -> raise Not_found
+      | x :: xs -> if n = 0 then (x, acc @ xs) else extract (x::acc) (n-1) xs
+    in
+    let extract_rand list len =
+      extract [] (Random.int len) list
+    in
+    let rec aux acc list len =
+      if len = 0 then acc else
+        let picked, rest = extract_rand list len in
+        aux (picked :: acc) rest (len-1)
+    in
+    aux [] list (List.length list)
 	
 
+(* 26. Generate the combinations of K distinct objects chosen from the N elements 
+of a list. (medium) *)
 
-
-
+let rec extract k list =
+    if k <= 0 then [ [] ]
+    else match list with
+         | [] -> []
+         | x :: xs ->
+            let with_x = List.map (fun l -> x :: l) (extract (k-1) xs) 
+        in
+            let without_x = extract k xs 
+        in
+            with_x @ without_x
 
 
 

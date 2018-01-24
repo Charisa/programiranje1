@@ -180,7 +180,7 @@ let rec fold_left_no_acc f l =
 	| []  -> failwith "Too short!"
 	| [x]  -> failwith "Too short!"
 	| [x;y] -> f x y 
-	| x::xs -> f x (fold_left_no_acc f xs) 
+	| x::xs -> f x (fold_left_no_acc f xs)
 
 
 (* The function "apply_sequence f x n" returns the list of repeated applications 
@@ -201,7 +201,18 @@ let apply_sequence f x n =
 		| _ -> aux f (f x) (n-1) (acc@[(f x)])  
 	)
 	in aux f x n [x]
-	
+
+		(* Lepša funkcija *)
+let apply_sequence1 f x n =
+	if n < 0 then [] else
+		begin
+			let rec aux f x n acc = 
+				match n with
+				| 0 -> acc
+				| _ -> aux f (f x) (n - 1) (f x :: acc)
+			in List.rev (aux f x n [x])
+		end
+
 
 (* The function "filter f l" returns the list of elements for which 
  (f x) equals true.
@@ -216,8 +227,7 @@ let filter f l =
 		| [] -> acc
 		| x::xs -> if f x = true then aux f xs (x::acc) else
 					aux f xs acc
-		in aux f l []
-
+		in List.rev (aux f l [])
 
 (* The function "exists f l" checks if there exists an element of the list l
  for which the function f returns true, otherwise it returns false.
@@ -232,6 +242,9 @@ let filter f l =
 let exists f l = 
 	if filter f l = [] then false else true
 
+let rec exists1 f = function
+	| [] -> false
+	| x :: xs -> if f x then true else exists1 f xs
 
 (* The function "first f none_value l" returns the first element of the list l
  for which f returns true. If such an element does not exist it returns none_value.
@@ -243,8 +256,7 @@ let exists f l =
  - : int = 0
  ---------- *)
 
-let rec first f none_value l = 
-	match l with
+let rec first f none_value = function
 	| [] -> none_value
 	| x::xs -> if f x = true then x else first f none_value xs
 
@@ -282,18 +294,35 @@ let rec first f none_value l =
   ("Mr Duck", "Protect"); ("Kylo Ren", "Banish"); ("Snoop Dogg", "Blaze")]
  ----------*)
 
-let able_protectors spells wizards = ()
+let able_protectors spells wizards =
+  (* Unzip to sum all costs. *)
+  let (_, spell_values) = unzip spells in
+  (* 0::0::spell_values added so that an empty list sums to 0. *)
+  let sequence_cost = fold_left_no_acc (+) (0::0::spell_values) in
+  (* Make filter function. *)
+  let can_cast (_, wizard_ability) = (wizard_ability >= sequence_cost) in
+  (* Get only the wizards who can cast. *)
+  let mighty_wizards = filter can_cast wizards in
+  (* Extract names *)
+  let (mighty_wizard_names, _) = unzip_tlrec mighty_wizards in
+  mighty_wizard_names
+
+let fails_on spells wizards =
+  (* Write auxiliary function that determines the first uncastable spell. *)
+  let rec gets_stuck spells wizard_ability =
+    match spells with
+    | [] -> ""
+    | (spell_name, spell_value)::tl ->
+      if wizard_ability >= spell_value
+      then gets_stuck tl (wizard_ability - spell_value)
+      else spell_name
+  in
+  (* Unzip to get a list of wizard ability values. *)
+  let (wizard_names, wizard_abilities) = unzip wizards in
+  (* Create a list of first uncastable spells. *)
+  let stuck_spells = map (gets_stuck spells) wizard_abilities in
+  (* Zip it back together. *)
+  zip wizard_names stuck_spells
 
 
 
-
-
-
-
-
-
-
-
-
-
-let fails_on spells wizards = ()

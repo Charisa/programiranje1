@@ -10,89 +10,108 @@ type comparison = LT | EQ | GT
    because we want to use the compare function on values of type t *outside the
    module*. The reason that we leave it abstract here is because it is simply
    unknown at this time. *)
+
 module type Comparable = sig
     type t
     val compare : t -> t -> comparison
   end
 
 (* Implement a module that can compare integers. *)
-(
+
+
 module Cmp_Int = struct
   type t = int
-  let compare x y = 
+  let compare x y = if x < y then LT else if x = y then EQ else GT
 end
  
-
-(* example: *)
 (* let _ = Cmp_Int.compare 9000 42;; *)
 
-(* When we prescribe the signature of a module we have to be careful which
-   types we make abstract. If a type is abstract in the signature, we can still
-   export explicitly via the "with type t = int" clause (because the
-   implementation of int is known outside the module). *)
-(* module Cmp_Int_prescribed = (Cmp_Int : Comparable with type t = int) *)
 
-(* example: *)
+(* Ko modulu predpišemo signaturo, je potrebno paziti katere tipe naredimo
+   abstraktne. Če je tip abstrakten v signaturi, ga lahko kljub temu
+   'razkrijemo' s pomočjo "with type t = int", ko to potrebujemo. 
+   Primer:
+   module Cmp_Int_prescribed = (Cmp_Int : Comparable with type t = int) *)
+
+(* Primer uporabe: *)
 (* let _ = Cmp_Int_prescribed.compare (-9000) 42;; *)
 
-(* Now let's implement a module that compares strings. To write your compare
-   function, use the "compare" function from the "Pervasives" module of
-   built-in OCaml functions. It compares strings s and t lexicographically,
-   yielding -1 if s < t, 0 if s = t and 1 otherwise. *)
+
+
+
+
+(* Sedaj napiši modul, ki primerja nize. Pri pisanju primerjalne funkcije
+   si pomagaj s funkcijo "compare" iz vgrajenega modula "Pervasives".
+   Funkcija Pervasives.compare s t vrne -1 če je s<t, 0 če s=t in 1 za s>t. *)
+
+
 module Cmp_String = struct
-
+  type t = string
+  let compare x y = 
+    match Pervasives.compare x y with
+    | v when v < 0 -> LT
+    | 0 -> EQ
+    | _ -> GT
 end
 
-(* Write an example! *)
+let _ = Cmp_String.compare "a" "b"
 
 
-(* A functor is simply a function on the module level. We can define a functor
-   that takes a Comparable module as an argument and returns another
-   Comparable module on the same carrier type but with inverted order relation.
- *)
-(*
+(* Funktor je preslikava iz modula v modul. Sedaj definiraj funktor,
+   ki sprejme modul, ki ustreza Comparable signaturi in vrne nov Comparable
+   modul na istem osnovnem tipu, vendar z obrnjeno funkcijo primerjanja. *)
+   
+(* Spodnja definicija uporabla oznake za tipe. Brez oznak bi bila zgolj
+   "module Cmp_inv (Cmp)" vendar z oznako tipov povemo, da se tip končnega 
+   modula ujema s tipom modula, ki ga podamo kot argument. *)
+
+
 module Cmp_inv (Cmp : Comparable) : Comparable with type t = Cmp.t  = struct
-  type t = ...
-  let compare x y = ...
+  type t = Cmp.t
+  let compare x y = match Cmp.compare x y with
+  | LT -> GT
+  | EQ -> EQ
+  | GT -> LT
 end
- *)
 
 
-(* To use a functor, like other functions, we have to apply it. One difference
-   with other OCaml functions is that we need parenthesis around the
-   arguments. *)
+(* Funktor uporabljamo podobno kot funkcije, le da v tem primeru potrebujemo
+   oklepaje okrog argumentov. *)
 
-(*
+
 module Cmp_Int_inv = Cmp_inv (Cmp_Int)
 let _ = Cmp_Int.compare (-9000) 42;;
 let _ = Cmp_Int_inv.compare (-9000) 42;;
- *)
 
-(* Finally, here is the signature of a priority queue. We have a type of priority queues h, a type
-   of elements el, an empty priority queue, and operations to push onto and safely pop
-   elements off the priority queue. Pop returns the new priority queue and the highest-priority
-   element if the priority queue is non-empty. *)
-(*
-module type Priority_Queue = sig
+
+(* Sedaj napišemo signaturo kopice [heap] (oz. prioritetne vrste). Imamo tip kopice,
+   ki ga označimo s "h", tip elementov "el", prazno kopico in pa operacijo "push", ki na
+   kopico doda element in operacijo "pop", ki iz kopice odvzame prvi element po prioriteti. 
+   Ker je kopica lahko prazna, nam "pop" vrne opcijski tip. *)
+
+
+module type Heap = sig
     type h
     type el
     val empty : h
     val pop : h -> (h * el) option
-    val push : ...
+    val push : h -> el -> h
   end
- *)
 
 
-(* We can implement a priority queue as a sorted list. Write a functor that takes a
-   Comparable module as an argument and implements a priority queue with Cmp.t lists as
-   carrier. Be careful about which types you want to hide. *)
-(*
-module Sorted_List_Priority_Queue ... = struct
+(* Kopico bomo implementirali kot urejen seznam. Napiši funktor, ki sprejme Comparable
+   modul in s pomočjo primerjave v tem modulu naredi kopico preko urejenega seznama.
+   Seznam vsebuje elementa tipa Cmp.t *)
 
+
+module Sorted_List_Heap ... = struct
   ...
-
 end
-*)
+
+
+
+
+
 
 (* Apply your functor to build a priority queue of integers, and a priority queue of strings. *)
 
